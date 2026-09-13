@@ -4,8 +4,7 @@ import toast from "react-hot-toast";
 import axios from 'axios'
 
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = import.meta.env.PROD ? 'https://green-cart-theta-eosin.vercel.app' : 'http://localhost:4000';
-
+axios.defaults.baseURL = typeof window !== 'undefined' && window.location.hostname !== 'localhost' ? '' : 'http://localhost:4000';
 
 const AppContext = createContext();
 
