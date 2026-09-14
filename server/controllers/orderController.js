@@ -79,7 +79,7 @@ export const stripeWebhooks = async (req, res) => {
 export const placeOrderStripe = async (req, res) => {
     try {
         const { userId, items, address } = req.body;
-        const origin = req.headers.origin;
+        const origin = req.headers.origin || "https://vercel.app";
 
         if (!address || !items || items.length === 0) {
             return res.status(400).json({ success: false, message: "Invalid data" });
