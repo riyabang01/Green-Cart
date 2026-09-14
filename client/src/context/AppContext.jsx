@@ -4,9 +4,7 @@ import toast from "react-hot-toast";
 import axios from 'axios'
 
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = import.meta.env.MODE === 'production' ? 'https://green-cart-theta-eosin.vercel.app' : 'http://localhost:4000';
-
-
+axios.defaults.baseURL = import.meta.env.MODE === 'production' ? '' : 'http://localhost:4000';
 
 const AppContext = createContext();
 
@@ -17,12 +15,12 @@ export const AppContextProvider = ({children})=> {
 
     const[user, setUser] = useState(null)
     const [token, setToken] = useState(
-    localStorage.getItem('token') || 
-    localStorage.getItem('auth-token') || 
-    localStorage.getItem('jwt') || 
-    localStorage.getItem('userToken') || 
-    ''
-)
+        localStorage.getItem('token') || 
+        localStorage.getItem('auth-token') || 
+        localStorage.getItem('jwt') || 
+        localStorage.getItem('userToken') || 
+        ''
+    )
     const[isSeller, setIsSeller] = useState(false)
     const[showUserLogin, setShowUserLogin] = useState(false)
     const[products, setProducts] = useState([])
@@ -34,7 +32,7 @@ export const AppContextProvider = ({children})=> {
 
     const fetchSeller = async ()=> {
         try {
-            const {data} = await axios.post('/api/seller/is-auth')
+            const {data} = await axios.post('/api/seller/is-auth', {}, { headers: { token } })
             if(data.success) {
                 setIsSeller(true)
                 localStorage.setItem('isSellerLoggedIn', 'true')
@@ -61,6 +59,8 @@ export const AppContextProvider = ({children})=> {
             }
         } catch (error) {
             setUser(null)
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -129,8 +129,12 @@ export const AppContextProvider = ({children})=> {
     }
 
     useEffect(()=> {
-        fetchUser()
-        fetchSeller();
+        if(token) {
+            fetchUser()
+            fetchSeller();
+        } else {
+            setLoading(false)
+        }
         fetchProducts();
     },[token])
 
