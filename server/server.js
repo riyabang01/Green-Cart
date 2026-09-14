@@ -26,6 +26,9 @@ const initializeApp = async () => {
 app.use(async (req, res, next) => {
     try {
         await initializeApp();
+        if (req.method === 'OPTIONS') {
+            return next();
+        }
         next();
     } catch (err) {
         res.status(500).send("Database connection error");
