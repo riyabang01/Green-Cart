@@ -79,7 +79,7 @@ export const stripeWebhooks = async (req, res) => {
 export const placeOrderStripe = async (req, res) => {
     try {
         const { userId, items, address } = req.body;
-        const origin = req.headers.origin || "https://vercel.app";
+        const origin = req.headers.origin || "https://green-cart-theta-eosin.vercel.app";
 
         if (!address || !items || items.length === 0) {
             return res.status(400).json({ success: false, message: "Invalid data" });
@@ -146,7 +146,7 @@ export const placeOrderStripe = async (req, res) => {
         const session = await stripeInstance.checkout.sessions.create({
             line_items: lineItems, 
             mode: "payment",
-            success_url: `${origin}/loader?next=my-orders&session_id={CHECKOUT_SESSION_ID}`,
+            success_url: `${origin}/my-orders?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${origin}/cart`,
             metadata: {
                 orderId: order._id.toString(),
