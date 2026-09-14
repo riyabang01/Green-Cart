@@ -14,8 +14,23 @@ import { stripeWebhooks } from './controllers/orderController.js';
 
 const app = express();
 
-connectDB();
-connectCloudinary();
+let isConnected = false;
+const initializeApp = async () => {
+    if (!isConnected) {
+        await connectDB();
+        connectCloudinary();
+        isConnected = true;
+    }
+};
+
+app.use(async (req, res, next) => {
+    try {
+        await initializeApp();
+        next();
+    } catch (err) {
+        res.status(500).send("Database connection error");
+    }
+});
 
 app.post('/api/order/webhook', express.raw({ type: 'application/json' }), stripeWebhooks);
 
