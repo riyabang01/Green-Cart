@@ -1,6 +1,8 @@
-
-import { Route, Routes, useLocation, Navigate, Outlet } from 'react-router'
+import { Route, Routes, useLocation, Navigate, Outlet, useNavigate } from 'react-router'
 import { Toaster } from 'react-hot-toast'
+import { useEffect } from 'react'
+import axios from 'axios'
+import toast from 'react-hot-toast'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import Login from './components/Login'
@@ -20,10 +22,39 @@ import { useAppContext } from './context/AppContext'
 import Loading from './components/Loading'
 
 const App = () => {
-  const isSellerPath = useLocation().pathname.startsWith('/seller')
-  const { showUserLogin, isSeller, loading } = useAppContext()
+  const location = useLocation()
+  const navigate = useNavigate()
+  const isSellerPath = location.pathname.startsWith('/seller')
+  const { showUserLogin, isSeller, loading, backendUrl } = useAppContext()
   
   const hasSellerSession = isSeller && localStorage.getItem('isSellerLoggedIn') === 'true'
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search)
+    const isSuccess = queryParams.get('payment_success')
+    const sessionId = queryParams.get('session_id')
+
+    if (isSuccess === 'true' && sessionId) {
+      const verifyPayment = async () => {
+        try {
+          const url = `${backendUrl || ''}/api/order/verifyStripe`
+          const response = await axios.post(url, { sessionId })
+          if (response.data.success) {
+            toast.success("Payment Verified Successfully!")
+            navigate('/my-orders', { replace: true })
+          } else {
+            toast.error("Payment verification failed.")
+            navigate('/cart', { replace: true })
+          }
+        } catch (error) {
+          console.error(error)
+          toast.error("Something went wrong verifying payment.")
+          navigate('/cart', { replace: true })
+        }
+      }
+      verifyPayment()
+    }
+  }, [location, navigate, backendUrl])
 
   if (loading) {
     return (
