@@ -50,7 +50,10 @@ app.use(cors({
     allowedHeaders: ["Content-Type", "Authorization", "token", "Origin", "Accept"]
 }));
 
+// Main routes aur frontend bypass ke liye status endpoints
 app.get('/', (req, res) => res.send("API is working"));
+app.get('/api/status', (req, res) => res.send("API is working")); // <-- Naya backup status route!
+
 app.use('/api/user', userRouter);
 app.use('/api/seller', sellerRouter);
 app.use('/api/product', productRouter);
