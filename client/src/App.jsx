@@ -38,10 +38,11 @@ const App = () => {
       const verifyPayment = async () => {
         try {
           const authToken = token || localStorage.getItem('token')
-          if (!authToken) return;
+          if (!authToken) {
+            return
+          }
 
           const url = `${backendUrl || ''}/api/order/verify-stripe`
-          
           const response = await axios.post(
             url, 
             { sessionId },
