@@ -78,8 +78,8 @@ export const stripeWebhooks = async (req, res) => {
 
 export const placeOrderStripe = async (req, res) => {
     try {
-        const { userId, items, address } = req.body;
-        const origin = req.headers.origin || "https://green-cart-theta-eosin.vercel.app";
+        const { userId, items, address, origin: clientOrigin } = req.body;
+        const origin = clientOrigin || req.headers.origin || "https://green-cart-theta-eosin.vercel.app";
 
         if (!address || !items || items.length === 0) {
             return res.status(400).json({ success: false, message: "Invalid data" });
