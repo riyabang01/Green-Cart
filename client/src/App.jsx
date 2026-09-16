@@ -25,7 +25,7 @@ const App = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const isSellerPath = location.pathname.startsWith('/seller')
-  const { showUserLogin, isSeller, loading, backendUrl } = useAppContext()
+  const { showUserLogin, isSeller, loading, backendUrl, token } = useAppContext()
   
   const hasSellerSession = isSeller && localStorage.getItem('isSellerLoggedIn') === 'true'
 
@@ -37,8 +37,15 @@ const App = () => {
     if (isSuccess === 'true' && sessionId) {
       const verifyPayment = async () => {
         try {
-          const url = `${backendUrl || ''}/api/order/verifyStripe`
-          const response = await axios.post(url, { sessionId })
+          const authToken = token || localStorage.getItem('token')
+          const url = `${backendUrl || ''}/api/order/verify-stripe`
+          
+          const response = await axios.post(
+            url, 
+            { sessionId },
+            { headers: { token: authToken } }
+          )
+          
           if (response.data.success) {
             toast.success("Payment Verified Successfully!")
             navigate('/my-orders', { replace: true })
@@ -54,7 +61,7 @@ const App = () => {
       }
       verifyPayment()
     }
-  }, [location, navigate, backendUrl])
+  }, [location, navigate, backendUrl, token])
 
   if (loading) {
     return (
