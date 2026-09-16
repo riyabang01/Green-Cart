@@ -146,7 +146,7 @@ export const placeOrderStripe = async (req, res) => {
         const session = await stripeInstance.checkout.sessions.create({
             line_items: lineItems, 
             mode: "payment",
-            success_url: `${origin}/my-orders?session_id={CHECKOUT_SESSION_ID}`,
+            success_url: `${origin}/?payment_success=true&session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${origin}/cart`,
             metadata: {
                 orderId: order._id.toString(),
@@ -193,10 +193,9 @@ export const getUserOrders = async (req, res) => {
     try {
         const userId = req.body.userId || req.userId;
 
-        const orders = await Order.find({
-            userId,
-            $or: [{ paymentType: 'COD' }, { isPaid: true }]
-        }).populate('items.product').sort({ createdAt: -1 });
+        const orders = await Order.find({ userId })
+            .populate('items.product')
+            .sort({ createdAt: -1 });
 
         return res.status(200).json({ success: true, orders });
     } catch (error) {
@@ -207,9 +206,9 @@ export const getUserOrders = async (req, res) => {
 
 export const getAllOrders = async (req, res) => {
     try {
-        const orders = await Order.find({
-            $or: [{ paymentType: 'COD' }, { isPaid: true }]
-        }).populate('items.product').sort({ createdAt: -1 });
+        const orders = await Order.find({})
+            .populate('items.product')
+            .sort({ createdAt: -1 });
 
         return res.status(200).json({ success: true, orders });
     } catch (error) {
