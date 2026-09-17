@@ -23,10 +23,10 @@ const Login = () => {
             });
 
             if (data.success) {
-                if (data.token) {
-                    localStorage.setItem('token', data.token)
-                    setToken(data.token)
-                }
+                const activeToken = data.token || "authenticated_via_cookie";
+                localStorage.setItem('token', activeToken);
+                setToken(activeToken);
+                
                 navigate('/')
                 setUser(data.user)
                 setShowUserLogin(false)
