@@ -152,7 +152,7 @@ export const AppContextProvider = ({children})=> {
             await fetchProducts();
         }
         initializeAuth();
-    },[token])
+    },[])
 
     useEffect(()=> {
         const updateCart = async ()=> {
