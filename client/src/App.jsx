@@ -25,9 +25,15 @@ const App = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const isSellerPath = location.pathname.startsWith('/seller')
-  const { showUserLogin, isSeller, loading, backendUrl, token } = useAppContext()
+  const { showUserLogin, setShowUserLogin, isSeller, loading, backendUrl, token } = useAppContext()
   
   const hasSellerSession = isSeller && localStorage.getItem('isSellerLoggedIn') === 'true'
+
+  const userToken = token || 
+                    localStorage.getItem('token') || 
+                    localStorage.getItem('auth-token') || 
+                    localStorage.getItem('jwt') || 
+                    localStorage.getItem('userToken');
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search)
@@ -37,8 +43,7 @@ const App = () => {
     if (isSuccess === 'true' && sessionId) {
       const verifyPayment = async () => {
         try {
-          const authToken = token || localStorage.getItem('token')
-          if (!authToken) {
+          if (!userToken) {
             return
           }
 
@@ -46,7 +51,7 @@ const App = () => {
           const response = await axios.post(
             url, 
             { sessionId },
-            { headers: { token: authToken } }
+            { headers: { token: userToken } }
           )
           
           if (response.data.success) {
@@ -64,7 +69,17 @@ const App = () => {
       }
       verifyPayment()
     }
-  }, [location, navigate, backendUrl, token])
+  }, [location, navigate, backendUrl, userToken])
+
+  useEffect(() => {
+    if (!loading && !isSellerPath && location.pathname !== '/seller-login') {
+      if (!userToken) {
+        setShowUserLogin(true);
+      } else {
+        setShowUserLogin(false);
+      }
+    }
+  }, [loading, userToken, location.pathname, isSellerPath, setShowUserLogin])
 
   if (loading) {
     return (
@@ -83,13 +98,16 @@ const App = () => {
 
       <div className={isSellerPath ? '' : 'px-6 md:px-16 lg:px-24 xl:px-32'}>
         <Routes>
-          <Route path='/' element={<Home />} />
-          <Route path='/products' element={<AllProducts />} />
-          <Route path='/products/:category' element={<ProductCategory />} />
-          <Route path='/products/:category/:id' element={<ProductDetails />} />
-          <Route path='/cart' element={<Cart />} />
-          <Route path='/add-address' element={<AddAddress />} />
-          <Route path='/my-orders' element={<MyOrders />} />
+          <Route element={userToken ? <Outlet /> : <div className="min-h-[60vh] flex items-center justify-center text-gray-400">Please Login to Access Content</div>}>
+            <Route path='/' element={<Home />} />
+            <Route path='/products' element={<AllProducts />} />
+            <Route path='/products/:category' element={<ProductCategory />} />
+            <Route path='/products/:category/:id' element={<ProductDetails />} />
+            <Route path='/cart' element={<Cart />} />
+            <Route path='/add-address' element={<AddAddress />} />
+            <Route path='/my-orders' element={<MyOrders />} />
+          </Route>
+          
           <Route path='/loader' element={<Loading />} />
           
           <Route 
