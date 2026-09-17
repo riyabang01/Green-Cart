@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 
 const Login = () => {
 
-    const { setShowUserLogin, setUser, axios, navigate } = useAppContext()
+    const { setShowUserLogin, setUser, setToken, axios, navigate } = useAppContext()
 
     const [state, setState] = React.useState("login");
     const [name, setName] = React.useState("");
@@ -23,6 +23,13 @@ const Login = () => {
             });
 
             if (data.success) {
+                const activeToken = data.token || "authenticated_via_cookie";
+                localStorage.setItem('token', activeToken);
+                localStorage.setItem('auth-token', activeToken);
+                localStorage.setItem('jwt', activeToken);
+                localStorage.setItem('userToken', activeToken);
+                setToken(activeToken);
+
                 navigate('/')
                 setUser(data.user)
                 setShowUserLogin(false)
