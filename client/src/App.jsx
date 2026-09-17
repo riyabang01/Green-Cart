@@ -37,7 +37,11 @@ const App = () => {
     if (isSuccess === 'true' && sessionId) {
       const verifyPayment = async () => {
         try {
-          const authToken = token || localStorage.getItem('token')
+          const authToken = token || 
+                            localStorage.getItem('token') || 
+                            localStorage.getItem('auth-token') || 
+                            localStorage.getItem('jwt') || 
+                            localStorage.getItem('userToken');
           if (!authToken) {
             return
           }
