@@ -6,34 +6,21 @@ import toast from 'react-hot-toast'
 
 const Navbar = () => {
     const [open, setOpen] = React.useState(false)
-    const { user, setUser, setToken, setShowUserLogin, navigate, setSearchQuery, searchQuery, getCartCount, axios } = useAppContext();
+    const { user, setUser, setShowUserLogin, navigate, setSearchQuery, searchQuery, getCartCount, axios } = useAppContext();
 
     const logout = async () => {
         try {
-            const tokenVal = localStorage.getItem('token') || 
-                             localStorage.getItem('auth-token') || 
-                             localStorage.getItem('jwt') || 
-                             localStorage.getItem('userToken') || 
-                             '';
-                             
+            const token = localStorage.getItem('token') || localStorage.getItem('userToken');
             const { data } = await axios.get('/api/user/logout', {
                 headers: {
-                    'token': tokenVal,
-                    'Authorization': `Bearer ${tokenVal}`
+                    'token': token,
+                    'Authorization': `Bearer ${token}`
                 }
             });
-            
             if (data.success) {
                 toast.success(data.message)
-                
                 localStorage.removeItem('token')
-                localStorage.removeItem('auth-token')
-                localStorage.removeItem('jwt')
                 localStorage.removeItem('userToken')
-                
-                if (typeof setToken === 'function') {
-                    setToken('')
-                }
                 setUser(null)
                 navigate('/')
             } else {
@@ -41,17 +28,6 @@ const Navbar = () => {
             }
         } catch (error) {
             toast.error(error.response?.data?.message || error.message)
-            
-            localStorage.removeItem('token')
-            localStorage.removeItem('auth-token')
-            localStorage.removeItem('jwt')
-            localStorage.removeItem('userToken')
-            
-            if (typeof setToken === 'function') {
-                setToken('')
-            }
-            setUser(null)
-            navigate('/')
         }
     }
 
