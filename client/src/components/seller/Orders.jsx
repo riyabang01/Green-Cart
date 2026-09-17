@@ -84,8 +84,8 @@ const Orders = () => {
                 <p><span className="text-gray-400">Date:</span> {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}</p>
                 <p>
                   <span className="text-gray-400">Payment:</span>{' '}
-                  <span className={`font-medium ${order.isPaid ? 'text-green-600' : 'text-amber-600'}`}>
-                    {order.isPaid ? "Paid" : "Pending"}
+                  <span className={`font-medium ${(order.isPaid || order.paymentType === "Online") ? 'text-green-600' : 'text-amber-600'}`}>
+                    {order.isPaid ? "Paid" : (order.paymentType === "Online" ? "Paid" : "Pending")}
                   </span>
                 </p>
               </div>
