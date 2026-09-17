@@ -13,26 +13,28 @@ export const AppContextProvider = ({children})=> {
     const currency = import.meta.env.VITE_CURRENCY;
     const navigate = useNavigate();
 
-    const[user, setUser] = useState(null)
-    const [token, setToken] = useState(
-        localStorage.getItem('token') || 
-        localStorage.getItem('auth-token') || 
-        localStorage.getItem('jwt') || 
-        localStorage.getItem('userToken') || 
-        ''
-    )
-    const[isSeller, setIsSeller] = useState(false)
-    const[showUserLogin, setShowUserLogin] = useState(false)
-    const[products, setProducts] = useState([])
-    const[loading, setLoading] = useState(true)
+    const [user, setUser] = useState(null)
+    const [token, setToken] = useState(() => {
+        return localStorage.getItem('token') || 
+               localStorage.getItem('auth-token') || 
+               localStorage.getItem('jwt') || 
+               localStorage.getItem('userToken') || 
+               ''
+    })
+    const [isSeller, setIsSeller] = useState(false)
+    const [showUserLogin, setShowUserLogin] = useState(false)
+    const [products, setProducts] = useState([])
+    const [loading, setLoading] = useState(true)
 
-    const[cartItems, setCartItems] = useState({})
-    const[searchQuery, setSearchQuery] = useState({})
-    const[isInitialMount, setIsInitialMount] = useState(true) 
+    const [cartItems, setCartItems] = useState({})
+    const [searchQuery, setSearchQuery] = useState({})
+    const [isInitialMount, setIsInitialMount] = useState(true) 
 
-    const fetchSeller = async ()=> {
+    const fetchSeller = async (activeToken)=> {
+        const currentToken = activeToken || token;
+        if (!currentToken) return;
         try {
-            const {data} = await axios.post('/api/seller/is-auth', {}, { headers: { token } })
+            const {data} = await axios.post('/api/seller/is-auth', {}, { headers: { token: currentToken } })
             if(data.success) {
                 setIsSeller(true)
                 localStorage.setItem('isSellerLoggedIn', 'true')
@@ -43,19 +45,24 @@ export const AppContextProvider = ({children})=> {
         } catch (error) {
             setIsSeller(false)
             localStorage.removeItem('isSellerLoggedIn')
-        } finally {
-            setLoading(false)
         }
     }
 
-    const fetchUser = async ()=> {
+    const fetchUser = async (activeToken)=> {
+        const currentToken = activeToken || token;
+        if (!currentToken) {
+            setLoading(false);
+            return;
+        }
         try {
-            const {data} = await axios.get('/api/user/is-auth', { headers: { token } })
-             if(data.success) {
+            const {data} = await axios.get('/api/user/is-auth', { headers: { token: currentToken } })
+            if(data.success) {
                 setUser(data.user)
                 if (data.user.cartItems) {
                     setCartItems(data.user.cartItems)
                 }
+            } else {
+                setUser(null)
             }
         } catch (error) {
             setUser(null)
@@ -129,13 +136,22 @@ export const AppContextProvider = ({children})=> {
     }
 
     useEffect(()=> {
-        if(token) {
-            fetchUser()
-            fetchSeller();
-        } else {
-            setLoading(false)
+        const initializeAuth = async () => {
+            const savedToken = localStorage.getItem('token') || 
+                               localStorage.getItem('auth-token') || 
+                               localStorage.getItem('jwt') || 
+                               localStorage.getItem('userToken') || 
+                               '';
+            
+            if(savedToken) {
+                await fetchUser(savedToken)
+                await fetchSeller(savedToken);
+            } else {
+                setLoading(false)
+            }
+            await fetchProducts();
         }
-        fetchProducts();
+        initializeAuth();
     },[token])
 
     useEffect(()=> {
